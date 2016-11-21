@@ -15,7 +15,7 @@ struct in_bytes {
 };
 
 // vars
-in_bytes rx_bytes[65];
+in_bytes rx_bytes[78];
 word rx_byte_idx;
 volatile word isr_times_buffer[60];
 byte isr_idx_buffer;
@@ -65,6 +65,7 @@ void update_time_buffer(void) {
 
 		if (idx >= 0 && baud_rates[idx] != baud_rates[baud_rate_idx]) {
 			baud_rate_idx = idx;
+			flash_baud();
 			Serial.begin(baud_rates[baud_rate_idx]);
 		}
 	}
@@ -72,15 +73,7 @@ void update_time_buffer(void) {
 
 void printBuffer(void) {
 	display.clearDisplay();
-	display.setCursor(0, 0);
-	if (manual_baud) {
-		display.print("M Baud:");
-	}
-	else {
-		display.print("A Baud:");
-	}
-	display.println(baud_rates[baud_rate_idx]);
-	
+	display.setCursor(0, 0);	
 	
 	word i = rx_byte_idx;
 	word idx = 0;	
@@ -139,7 +132,7 @@ void setup() {
 	int printJob = t.every(1000, printBuffer);
 
 	display.begin();	
-	display.setContrast(50);
+	display.setContrast(60);
 	display.clearDisplay();	
 	display.setTextSize(1);
 	display.setTextColor(BLACK);
@@ -152,6 +145,24 @@ void setup() {
 
 }
 
+void flash_baud() {
+	display.clearDisplay();
+	display.setTextSize(2);
+	display.setTextColor(WHITE, BLACK);
+	if (manual_baud) {
+		display.println("MANUAL");
+	}
+	else {
+		display.println("AUTO");
+	}	
+	display.println(baud_rates[baud_rate_idx]);
+	display.display();
+	delay(500);
+	
+	display.setTextSize(1);
+	display.setTextColor(BLACK);
+
+}
 
 void loop() {
 	t.update();
@@ -170,6 +181,7 @@ void loop() {
 		if (++baud_rate_idx == total_baud_rates) {
 			baud_rate_idx = 0;
 		}
+		flash_baud();
 		Serial.begin(baud_rates[baud_rate_idx]);
 	}
 	

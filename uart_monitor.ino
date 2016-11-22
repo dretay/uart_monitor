@@ -168,7 +168,6 @@ void loop() {
 	t.update();
 	clearButton.read();
 	if (clearButton.wasReleased()) {
-		manual_baud = false;
 		int i = 0;
 		for (; i < ROW_COUNT(rx_bytes); i++) {
 			rx_bytes[i].set = false;
@@ -176,13 +175,17 @@ void loop() {
 	}
 
 	manualBaudButton.read();
-	if (manualBaudButton.wasReleased()) {
-		manual_baud = true;
+	if (manualBaudButton.wasReleased()) {		
 		if (++baud_rate_idx == total_baud_rates) {
+			manual_baud = false;
 			baud_rate_idx = 0;
+			flash_baud();
 		}
-		flash_baud();
-		Serial.begin(baud_rates[baud_rate_idx]);
+		else {
+			manual_baud = true;
+			flash_baud();
+			Serial.begin(baud_rates[baud_rate_idx]);
+		}
 	}
 	
 }
